@@ -1,16 +1,17 @@
 #!/usr/bin/env ruby
 
 require 'optparse'
+require 'date'
+
 params = {}
 opt = OptionParser.new
 opt.on('-m [VAL]', "月") { |m| params[:month] = m }
 opt.on('-y [VAL]', "年") { |y| params[:year] = y }
 opt.parse(ARGV)
 
-require "date"
 today = Date.today
-target_month = params[:month] ? params[:month].to_i : today.month
-target_year = params[:year] ? params[:year].to_i : today.year
+target_month = params[:month]&.to_i || today.month
+target_year = params[:year]&.to_i || today.year
 
 first_day = Date.new(target_year, target_month, 1)
 last_day = Date.new(target_year, target_month, -1)
@@ -22,7 +23,7 @@ puts
 end
 puts
 print "   " * first_day.wday
-(first_day..last_day).each do |x|
-  print x.day.to_s.rjust(3)
-  puts if x.saturday?
+(first_day..last_day).each do |current_day|
+  print current_day.day.to_s.rjust(3)
+  puts if current_day.saturday?
 end
