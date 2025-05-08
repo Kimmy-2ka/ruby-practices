@@ -14,23 +14,14 @@ frames << shots[20..] if shots[20] # 10フレーム目に3投目以降がある�
 
 point = 0
 frames.each_with_index do |frame, idx|
-  if idx > 8
-    point += frame.sum
-    next
-  end
+  point += frame.sum
+  next if idx > 8 || (frame[0] != 10 && frame.sum != 10)
 
   following_frame = frames[idx + 1]
   first_bonus = following_frame[0] || 0
   second_bonus = first_bonus == 10 ? frames[idx + 2][0] : following_frame[1]
 
-  point +=
-    if frame[0] == 10
-      frame.sum + first_bonus + second_bonus
-    elsif frame.sum == 10
-      frame.sum + first_bonus
-    else
-      frame.sum
-    end
+  point += frame[0] == 10 ? first_bonus + second_bonus : first_bonus
 end
 
 puts point
