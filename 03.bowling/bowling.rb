@@ -15,7 +15,7 @@ frames << shots[20..] if shots[20] # 10フレーム目に3投目以降がある�
 point = 0
 frames.each_with_index do |frame, idx|
   point += frame.sum
-  next if idx > 8 || (frame[0] != 10 && frame.sum != 10)
+  next if idx > 8 || frame.sum != 10
 
   following_frame = frames[idx + 1]
   first_bonus = following_frame[0] || 0
