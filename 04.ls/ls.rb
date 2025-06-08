@@ -1,13 +1,22 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
+require 'optparse'
+
 COLUMN_COUNT = 3
 
 def main
-  files = Dir.glob('*').sort_by(&:downcase)
+  params = ARGV.getopts('a')
+  files = prepared_files(params)
   row_count = files.count.ceildiv(COLUMN_COUNT)
   columns = split_into_columns(files, COLUMN_COUNT, row_count)
   output(columns, row_count)
+end
+
+# -rオプションもprepared_filesメソッドに実装予定
+def prepared_files(params)
+  raw_files = Dir.glob('*', params['a'] ? File::FNM_DOTMATCH : 0)
+  raw_files.sort_by { |x| x.gsub(/[^a-z0-9]/i, '').downcase }
 end
 
 def split_into_columns(files, column_count, row_count)
@@ -22,11 +31,11 @@ end
 def output(columns, row_count)
   column_widths = columns.map { |words| words.map(&:size).max }
   row_count.times do |row_idx|
-    columns.each_with_index do |col, col_idx|
+    cols = columns.filter_map.with_index do |col, col_idx|
       filename = col[row_idx]
-      print "#{filename.ljust(column_widths[col_idx])}  " if filename
+      filename&.ljust(column_widths[col_idx])
     end
-    print "\n"
+    puts cols.join('  ')
   end
 end
 
