@@ -6,17 +6,18 @@ require 'optparse'
 COLUMN_COUNT = 3
 
 def main
-  params = ARGV.getopts('a')
-  files = prepared_files(params)
+  options = ARGV.getopts('a')
+  files = prepare_files(options)
   row_count = files.count.ceildiv(COLUMN_COUNT)
   columns = split_into_columns(files, COLUMN_COUNT, row_count)
   output(columns, row_count)
 end
 
 # -rオプションもprepared_filesメソッドに実装予定
-def prepared_files(params)
-  raw_files = Dir.glob('*', params['a'] ? File::FNM_DOTMATCH : 0)
-  raw_files.sort_by { |x| x.gsub(/[^a-z0-9]/i, '').downcase }
+def prepare_files(options)
+  dotmatch_option = options['a'] ? File::FNM_DOTMATCH : 0
+  raw_files = Dir.glob('*', dotmatch_option)
+  raw_files.sort_by { |f| f.gsub(/[^a-z0-9]/i, '').downcase }
 end
 
 def split_into_columns(files, column_count, row_count)
