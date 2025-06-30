@@ -13,28 +13,32 @@ FILE_TYPE = {
   'link' => 'l',
   'socket' => 's'
 }.freeze
-PERMISSION = {
-  '0' => '---',
-  '1' => '--x',
-  '2' => '-w-',
-  '3' => '-wx',
-  '4' => 'r--',
-  '5' => 'r-x',
-  '6' => 'rw-',
-  '7' => 'rwx'
+
+PERMISSIONS = {
+  '0' => { r: '-', w: '-', x: '-' },
+  '1' => { r: '-', w: '-', x: 'x' },
+  '2' => { r: '-', w: 'w', x: '-' },
+  '3' => { r: '-', w: 'w', x: 'x' },
+  '4' => { r: 'r', w: '-', x: '-' },
+  '5' => { r: 'r', w: '-', x: 'x' },
+  '6' => { r: 'r', w: 'w', x: '-' },
+  '7' => { r: 'r', w: 'w', x: 'x' }
 }.freeze
+
 SPECIAL_FLAGS = {
-  '1' => { index: 9, with_x: 't', without_x: 'T' },
-  '2' => { index: 6, with_x: 's', without_x: 'S' },
-  '4' => { index: 3, with_x: 's', without_x: 'S' }
+  '1' => { idx: 2, with_x: 't', without_x: 'T' },
+  '2' => { idx: 1, with_x: 's', without_x: 'S' },
+  '4' => { idx: 0, with_x: 's', without_x: 'S' }
 }.freeze
+
 COLUMN_COUNT = 3
 
 def main
-  options = ARGV.getopts('arl')
+  options = ARGV.getopts('alr')
   files = prepare_files(options)
   if options['l']
-    handle_long_format(files)
+    blocks, file_details = prepare_file_details(files)
+    output_long_format(blocks, file_details)
   else
     row_count = files.count.ceildiv(COLUMN_COUNT)
     columns = split_into_columns(files, COLUMN_COUNT, row_count)
@@ -49,67 +53,74 @@ def prepare_files(options)
   options['r'] ? sorted_files.reverse : sorted_files
 end
 
-def handle_long_format(files)
+def prepare_file_details(files)
   file_details = []
-  total_512_blocks = 0
+  blocks = 0
 
   files.each do |filename|
     filestat = File.stat(filename)
-    total_512_blocks += filestat.blocks
-    file_details << organize_file_details(filename, filestat)
+    blocks += filestat.blocks
+    file_details << build_file_detail(filename, filestat)
   end
-  output_long_format(total_512_blocks, file_details)
+  [blocks, file_details]
 end
 
-def organize_file_details(filename, filestat)
-  file_permissions_string = organize_file_permission_string(filestat)
-  [
-    file_permissions_string,
-    filestat.nlink,
-    Etc.getpwuid(filestat.uid).name,
-    Etc.getgrgid(filestat.gid).name,
-    filestat.size,
-    filestat.mtime.strftime('%b %e %H:%M'),
-    filename
-  ]
+def build_file_detail(filename, filestat)
+  file_permissions = build_file_permissions(filestat)
+  {
+    permission: file_permissions,
+    link: filestat.nlink,
+    owner_name: Etc.getpwuid(filestat.uid).name,
+    group_name: Etc.getgrgid(filestat.gid).name,
+    size: filestat.size,
+    timestamp: filestat.mtime.strftime('%b %e %H:%M'),
+    name: filename
+  }
 end
 
-def organize_file_permission_string(filestat)
+def build_file_permissions(filestat)
   octal_mode = filestat.mode.to_s(8)
 
-  file_permissions = []
-  file_permissions.push(FILE_TYPE[filestat.ftype])
-
-  octal_mode.chars[-3..].each do |bit|
-    file_permissions << PERMISSION[bit]
-  end
-
-  file_permissions_string = file_permissions.join
-
+  file_permissions = [FILE_TYPE[filestat.ftype]]
   special_permission_bits = octal_mode.slice(-4, 1)
-  if special_permission_bits != '0'
-    file_permissions_string =
-      check_special_permissions(special_permission_bits, file_permissions_string)
+
+  octal_mode.chars[-3..].each_with_index do |bit, idx|
+    permission = PERMISSIONS[bit]
+    special_flag = SPECIAL_FLAGS[special_permission_bits]
+    file_permissions << if special_flag && special_flag[:idx] == idx
+                          update_permission(special_flag, permission)
+                        else
+                          permission.values_at(:r, :w, :x).join
+                        end
   end
 
-  file_permissions_string
+  file_permissions.join
 end
 
-def check_special_permissions(special_permission_bits, file_permissions_string)
-  special_flag = SPECIAL_FLAGS[special_permission_bits]
+def update_permission(special_flag, permission)
+  updated_execute =
+    permission[:x] == 'x' ? special_flag[:with_x] : special_flag[:without_x]
 
-  file_permissions_string[special_flag[:index]] =
-    file_permissions_string[special_flag[:index]] == 'x' ? special_flag[:with_x] : special_flag[:without_x]
-
-  file_permissions_string
+  "#{permission[:r]}#{permission[:w]}#{updated_execute}"
 end
 
-def output_long_format(total_512_blocks, file_details)
-  puts "total #{total_512_blocks / 2}"
-  size_widths = file_details.map { |file_detail| file_detail[4].to_s.size }.max
+def output_long_format(blocks, file_details)
+  puts "total #{blocks / 2}"
+  link_width, owner_width, group_width, size_width =
+    %i[link owner_name group_name size].map do |key|
+      file_details.map { |file_detail| file_detail[key].to_s.size }.max
+    end
+
   file_details.each do |file_detail|
-    file_detail[4] = file_detail[4].to_s.rjust(size_widths)
-    puts file_detail.join(' ')
+    puts [
+      file_detail[:permission],
+      file_detail[:link].to_s.rjust(link_width),
+      file_detail[:owner_name].to_s.ljust(owner_width),
+      file_detail[:group_name].to_s.ljust(group_width),
+      file_detail[:size].to_s.rjust(size_width),
+      file_detail[:timestamp],
+      file_detail[:name]
+    ].join(' ')
   end
 end
 
