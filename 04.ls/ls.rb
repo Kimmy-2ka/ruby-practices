@@ -4,7 +4,7 @@
 require 'optparse'
 require 'etc'
 
-FILE_TYPE = {
+FILE_TYPES = {
   'file' => '-',
   'directory' => 'd',
   'characterSpecial' => 'c',
@@ -37,8 +37,8 @@ def main
   options = ARGV.getopts('alr')
   files = prepare_files(options)
   if options['l']
-    blocks, file_details = prepare_file_details(files)
-    output_long_format(blocks, file_details)
+    file_details = prepare_file_details(files)
+    output_long_format(file_details)
   else
     row_count = files.count.ceildiv(COLUMN_COUNT)
     columns = split_into_columns(files, COLUMN_COUNT, row_count)
@@ -55,72 +55,74 @@ end
 
 def prepare_file_details(files)
   file_details = []
-  blocks = 0
 
-  files.each do |filename|
-    filestat = File.stat(filename)
-    blocks += filestat.blocks
-    file_details << build_file_detail(filename, filestat)
+  files.each do |file|
+    filestat = File.stat(file)
+    file_details << build_file_detail(file, filestat)
   end
-  [blocks, file_details]
+
+  file_details
 end
 
-def build_file_detail(filename, filestat)
-  file_permissions = build_file_permissions(filestat)
+def build_file_detail(file, filestat)
   {
-    permission: file_permissions,
+    blocks: filestat.blocks,
+    permission: build_permission(filestat),
     link: filestat.nlink,
     owner_name: Etc.getpwuid(filestat.uid).name,
     group_name: Etc.getgrgid(filestat.gid).name,
     size: filestat.size,
     timestamp: filestat.mtime.strftime('%b %e %H:%M'),
-    name: filename
+    name: file
   }
 end
 
-def build_file_permissions(filestat)
+def build_permission(filestat)
   octal_mode = filestat.mode.to_s(8)
+  type = FILE_TYPES[filestat.ftype]
+  special_permission_bit = octal_mode.slice(-4, 1)
 
-  file_permissions = [FILE_TYPE[filestat.ftype]]
-  special_permission_bits = octal_mode.slice(-4, 1)
+  permission_chars =
+    octal_mode.chars[-3..].map.with_index do |bit, idx|
+      permission = PERMISSIONS[bit]
+      special_flag = SPECIAL_FLAGS[special_permission_bit]
+      if special_flag && special_flag[:idx] == idx
+        apply_special_permission(special_flag, permission)
+      else
+        permission.values_at(:r, :w, :x).join
+      end
+    end
 
-  octal_mode.chars[-3..].each_with_index do |bit, idx|
-    permission = PERMISSIONS[bit]
-    special_flag = SPECIAL_FLAGS[special_permission_bits]
-    file_permissions << if special_flag && special_flag[:idx] == idx
-                          update_permission(special_flag, permission)
-                        else
-                          permission.values_at(:r, :w, :x).join
-                        end
-  end
-
-  file_permissions.join
+  [type, *permission_chars].join
 end
 
-def update_permission(special_flag, permission)
-  updated_execute =
+def apply_special_permission(special_flag, permission)
+  execute_char =
     permission[:x] == 'x' ? special_flag[:with_x] : special_flag[:without_x]
 
-  "#{permission[:r]}#{permission[:w]}#{updated_execute}"
+  "#{permission[:r]}#{permission[:w]}#{execute_char}"
 end
 
-def output_long_format(blocks, file_details)
-  puts "total #{blocks / 2}"
-  link_width, owner_width, group_width, size_width =
-    %i[link owner_name group_name size].map do |key|
-      file_details.map { |file_detail| file_detail[key].to_s.size }.max
+def output_long_format(file_details)
+  puts "total #{file_details.sum { |f| f[:blocks] } / 2}"
+  widths =
+    %i[link owner_name group_name size].to_h do |key|
+      width = file_details.map { |file_detail| file_detail[key].to_s.size }.max
+      [key, width]
     end
 
   file_details.each do |file_detail|
-    puts [
+    row = [
       file_detail[:permission],
-      file_detail[:link].to_s.rjust(link_width),
-      file_detail[:owner_name].to_s.ljust(owner_width),
-      file_detail[:group_name].to_s.ljust(group_width),
-      file_detail[:size].to_s.rjust(size_width),
+      file_detail[:link].to_s.rjust(widths[:link]),
+      file_detail[:owner_name].to_s.ljust(widths[:owner_name]),
+      file_detail[:group_name].to_s.ljust(widths[:group_name]),
+      file_detail[:size].to_s.rjust(widths[:size]),
       file_detail[:timestamp],
       file_detail[:name]
-    ].join(' ')
+    ]
+
+    puts row.join(' ')
   end
 end
 
