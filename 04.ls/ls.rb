@@ -36,14 +36,7 @@ COLUMN_COUNT = 3
 def main
   options = ARGV.getopts('alr')
   files = prepare_files(options)
-  if options['l']
-    file_details = prepare_file_details(files)
-    output_long_format(file_details)
-  else
-    row_count = files.count.ceildiv(COLUMN_COUNT)
-    columns = split_into_columns(files, COLUMN_COUNT, row_count)
-    output_short_format(columns, row_count)
-  end
+  options['l'] ? output_long_format(files) : output_short_format(files)
 end
 
 def prepare_files(options)
@@ -103,7 +96,8 @@ def apply_special_permission(special_flag, permission)
   "#{permission[:r]}#{permission[:w]}#{execute_char}"
 end
 
-def output_long_format(file_details)
+def output_long_format(files)
+  file_details = prepare_file_details(files)
   puts "total #{file_details.sum { |f| f[:blocks] } / 2}"
   widths =
     %i[link owner_name group_name size].to_h do |key|
@@ -135,7 +129,9 @@ def split_into_columns(files, column_count, row_count)
   column_group
 end
 
-def output_short_format(columns, row_count)
+def output_short_format(files)
+  row_count = files.count.ceildiv(COLUMN_COUNT)
+  columns = split_into_columns(files, COLUMN_COUNT, row_count)
   column_widths = columns.map { |words| words.map(&:size).max }
   row_count.times do |row_idx|
     cols = columns.filter_map.with_index do |col, col_idx|
