@@ -13,73 +13,76 @@ opts.parse!(ARGV)
 
 def main(options)
   enabled_options = filter_options(options)
-  stdin_mode = ARGV.empty?
-  counted_files = collect_counted_files(stdin_mode)
-  print_counts(enabled_options, stdin_mode, counted_files)
+  files = target_files_from_commandline
+  file_counts = collect_counts(files)
+  print_counts(enabled_options, file_counts)
 end
 
 def filter_options(options)
-  if options.any? { |_key, value| value }
-    options.select { |_key, value| value }.keys
+  enabled_options = options.select { |_key, value| value }.keys
+  enabled_options.empty? ? %i[newline word byte] : enabled_options
+end
+
+def target_files_from_commandline
+  if ARGV.empty?
+    [{ text: $stdin.read, filename: nil }]
   else
-    %i[newline word byte]
+    ARGV.map { |file| { text: File.read(file), filename: file } }
   end
 end
 
-def collect_counted_files(stdin_mode)
-  if stdin_mode
-    [{ counts: count_values(text: $stdin.read), filename: nil }]
-  else
-    ARGV.map do |file|
-      { counts: count_values(text: File.read(file)), filename: file }
-    end
+def collect_counts(files)
+  files.map do |file|
+    { counts: count_values(text: file[:text]), filename: file[:filename] }
   end
 end
 
 def count_values(text:)
   {
     newline: text.count("\n"),
-    word: text.split(/\s+/).count,
+    word: text.strip.split(/\s+/).count,
     byte: text.size
   }
 end
 
-def print_counts(enabled_options, stdin_mode, counted_files)
-  if counted_files.size == 1 && enabled_options.size == 1
+def print_counts(enabled_options, file_counts)
+  if file_counts.size == 1 && enabled_options.size == 1
     widths = nil
   else
-    total_counts = build_total_counts(counted_files)
-    widths = format_widths(stdin_mode, total_counts)
+    total_counts = build_total_counts(file_counts)
+    widths = calculate_widths(file_counts, total_counts)
   end
 
-  print_row(enabled_options, widths, counted_files)
-  print_row(enabled_options, widths, [total_counts]) unless counted_files.size == 1
+  print_row(enabled_options, widths, file_counts)
+  print_row(enabled_options, widths, [total_counts]) if file_counts.size > 1
 end
 
-def build_total_counts(counted_files)
+def build_total_counts(file_counts)
   total =
     %i[newline word byte].to_h do |key|
-      sum = counted_files.sum { |file| file[:counts][key] }
+      sum = file_counts.sum { |file_count| file_count[:counts][key] }
       [key, sum]
     end
 
   { counts: total, filename: 'total' }
 end
 
-def format_widths(stdin_mode, total_counts)
-  min_width = stdin_mode ? 7 : 2
+def calculate_widths(file_counts, total_counts)
+  # stdin入力時はファイル名がnilなので、filenameで判定を行う。
+  # stdin入力時の最小幅は7、ARGVからの指定時は2とする。
+  min_width = file_counts.first[:filename].nil? ? 7 : 2
   max_width = total_counts[:counts].values.map { |value| value.to_s.size }.max
   [min_width, max_width].max
 end
 
-def print_row(enabled_options, widths, files)
-  files.each do |file|
+def print_row(enabled_options, widths, target_counts)
+  target_counts.each do |target_count|
     row =
       enabled_options.map do |option|
-        count_value = file[:counts][option].to_s
+        count_value = target_count[:counts][option].to_s
         widths ? count_value.rjust(widths) : count_value
       end
-    row << file[:filename]
+    row << target_count[:filename]
     puts row.compact.join(' ')
   end
 end
