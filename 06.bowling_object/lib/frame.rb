@@ -15,7 +15,7 @@ class Frame
     [@first_shot.score, @second_shot.score]
   end
 
-  def total
-    [@first_shot.score, @second_shot.score].sum
+  def score
+    [@first_shot.score, @second_shot.score, @third_shot.score].compact.sum
   end
 end

@@ -13,6 +13,14 @@ class Game
     # 合計する
   end
 
+  def score
+    total = 0
+    @frames.each do |frame|
+      total += frame.score
+    end
+    total
+  end
+
   def to_frames
     pins = @pins.dup
     frames = []
