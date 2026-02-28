@@ -6,8 +6,8 @@ require_relative  '../lib/game'
 
 class BowlingTest < Minitest::Test
   def test_slice
-    game = Game.new
-    pins = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-    assert_equal [[0,0], [0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0]], game.slice(pins)
+    pins = ['X',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,'X','X','X']
+    game = Game.new(pins)
+    assert_equal [['X'], [0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],['X','X','X']], game.slice
   end
 end

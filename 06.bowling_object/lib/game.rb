@@ -1,17 +1,28 @@
 # frozen_string_literal: true
 
 class Game
-  def play(pins)
+  def initialize(pins)
+    @pins = pins
+  end
+
+  def play
     # 分割する
     # 合計する
   end
 
-  def slice(pins)
-    pins = pins.dup
+  # privateにするとgame.sliceのテストに通らないので、一旦コメントアウト
+
+  def slice
+    pins = @pins.dup
     frames = []
-    10.times do
-      frames << pins.shift(2)
+    9.times do
+      frames << if pins.first == 'X'
+                  [pins.shift]
+                else
+                  pins.shift(2)
+                end
     end
+    frames << pins
     frames
   end
 end
