@@ -1,0 +1,10 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require_relative '../lib/game'
+
+marks = ARGV[0]
+pins = marks.split(',').map { |m| m == 'X' ? 'X' : m.to_i }
+
+game = Game.new(pins)
+puts game.score
