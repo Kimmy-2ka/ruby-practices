@@ -54,4 +54,3 @@ class BowlingTest < Minitest::Test
     assert_equal 50, game.score
   end
 end
-
