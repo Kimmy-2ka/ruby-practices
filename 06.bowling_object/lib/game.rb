@@ -16,7 +16,7 @@ class Game
       next if last_frame?(index)
 
       total += strike_bonus(index) if frame.strike?
-      total += @frames[index + 1].first_shot.score if frame.spare?
+      total += @frames[index + 1].shot_scores.first if frame.spare?
     end
 
     total
