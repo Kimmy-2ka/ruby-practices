@@ -7,16 +7,16 @@ class Frame
 
   def initialize(first_pin, second_pin = nil, third_pin = nil)
     @first_shot = Shot.new(first_pin)
-    @second_shot = Shot.new(second_pin || 0)
+    @second_shot = Shot.new(second_pin)
     @third_shot = Shot.new(third_pin)
   end
 
-  def to_a
-    [@first_shot.score, @second_shot.score]
+  def shot_scores
+    [@first_shot.score, @second_shot.score, @third_shot.score].compact
   end
 
   def score
-    [@first_shot.score, @second_shot.score, @third_shot.score].compact.sum
+    shot_scores.sum
   end
 
   def spare?

@@ -6,12 +6,6 @@ require_relative  '../lib/game'
 
 class BowlingTest < Minitest::Test
 
-  def test_strike_frame
-    pins = 'X',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,'X','X','X'
-    game = Game.new(pins)
-    assert_equal [10,0], game.to_frames[0].to_a
-  end
-
   def test_last_frame
     pins = 'X',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,'X','X','X'
     game = Game.new(pins)

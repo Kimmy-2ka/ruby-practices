@@ -8,35 +8,33 @@ class Game
     @frames = to_frames
   end
 
-  def play
-    # 分割する
-    # 合計する
-  end
-
   def score
     total = 0
-    @frames.each_with_index do |frame, i|
-      next_frame = @frames[i + 1]
+    @frames.each_with_index do |frame, index|
       total += frame.score
 
-      if i < 9
-        if frame.strike?
-          total += if next_frame.strike?
-                     if i == 8
-                       next_frame.first_shot.score + next_frame.second_shot.score
-                     else
-                       next_frame.first_shot.score + @frames[i + 2].first_shot.score
-                     end
-
-                   else
-                     next_frame.first_shot.score + next_frame.second_shot.score
-                   end
-        elsif frame.spare?
-          total += next_frame.first_shot.score
-        end
-      end
+      next if last_frame?(index)
+      next_frame = @frames[index + 1]
+      total += strike_bonus(next_frame, index) if frame.strike?
+      total += next_frame.first_shot.score if frame.spare?
     end
+
     total
+  end
+
+  def last_frame?(index)
+    index == 9
+  end
+
+  def strike_bonus(next_frame, index)
+    next_frame.strike? ? bonus_strike(next_frame, index) : next_frame.shot_scores.take(2).sum
+  end
+
+  def bonus_strike(next_frame, index)
+    second_score =
+      @frames[index + 2] ? @frames[index + 2].first_shot.score : next_frame.second_shot.score
+
+    next_frame.first_shot.score + second_score
   end
 
   def to_frames
