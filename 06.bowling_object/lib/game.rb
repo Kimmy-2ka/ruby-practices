@@ -4,8 +4,7 @@ require_relative 'frame'
 
 class Game
   def initialize(pins)
-    @pins = pins
-    @frames = to_frames
+    @frames = to_frames(pins)
   end
 
   def score
@@ -22,6 +21,8 @@ class Game
     total
   end
 
+  private
+
   def last_frame?(index)
     index == 9
   end
@@ -30,8 +31,8 @@ class Game
     @frames[(index + 1)..(index + 2)].flat_map(&:shot_scores).take(2).sum
   end
 
-  def to_frames
-    pins = @pins.dup
+  def to_frames(pins)
+    pins = pins.dup
     frames = []
     9.times do
       frames << if pins.first == 'X'
