@@ -9,6 +9,7 @@ class Shot
 
   def score
     return 10 if pin == 'X'
+    return nil if pin.nil?
 
     pin.to_i
   end

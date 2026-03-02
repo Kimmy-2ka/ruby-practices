@@ -14,9 +14,9 @@ class Game
       total += frame.score
 
       next if last_frame?(index)
-      next_frame = @frames[index + 1]
-      total += strike_bonus(next_frame, index) if frame.strike?
-      total += next_frame.first_shot.score if frame.spare?
+
+      total += strike_bonus(index) if frame.strike?
+      total += @frames[index + 1].first_shot.score if frame.spare?
     end
 
     total
@@ -26,15 +26,8 @@ class Game
     index == 9
   end
 
-  def strike_bonus(next_frame, index)
-    next_frame.strike? ? bonus_strike(next_frame, index) : next_frame.shot_scores.take(2).sum
-  end
-
-  def bonus_strike(next_frame, index)
-    second_score =
-      @frames[index + 2] ? @frames[index + 2].first_shot.score : next_frame.second_shot.score
-
-    next_frame.first_shot.score + second_score
+  def strike_bonus(index)
+    @frames[(index + 1)..(index + 2)].flat_map(&:shot_scores).take(2).sum
   end
 
   def to_frames
