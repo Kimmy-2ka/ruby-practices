@@ -8,6 +8,6 @@ class Shot
   def score
     return 10 if @pin == 'X'
 
-    @pin
+    @pin.to_i
   end
 end
