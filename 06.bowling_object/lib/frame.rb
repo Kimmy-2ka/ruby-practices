@@ -4,13 +4,12 @@ require_relative 'shot'
 
 class Frame
   def initialize(first_pin, second_pin = nil, third_pin = nil)
-    @first_shot = Shot.new(first_pin)
-    @second_shot = Shot.new(second_pin)
-    @third_shot = Shot.new(third_pin)
+    @shots =
+      [first_pin, second_pin, third_pin].compact.map { |pin| Shot.new(pin) }
   end
 
   def shot_scores
-    [@first_shot.score, @second_shot.score, @third_shot.score].compact
+    @shots.map(&:score)
   end
 
   def score
@@ -18,10 +17,10 @@ class Frame
   end
 
   def spare?
-    !strike? && [@first_shot.score, @second_shot.score].sum == 10
+    !strike? && score == 10
   end
 
   def strike?
-    @first_shot.score == 10
+    @shots[0].score == 10
   end
 end
