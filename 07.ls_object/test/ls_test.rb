@@ -6,7 +6,9 @@ class LsTest < Minitest::Test
   def test_display_with_7_entries
     list = Command.new('test/fixtures/seven_entries')
     expected = <<~TEXT.chomp
-      Apple2.txt  Egg.txt  Frenchfries  apple.txt  banana  cider  diet_sparkling.txt
+      Apple2.txt   apple.txt  diet_sparkling.txt
+      Egg.txt      banana
+      Frenchfries  cider
     TEXT
     assert_equal expected, list.output
   end
