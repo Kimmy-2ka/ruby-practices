@@ -4,8 +4,9 @@ require_relative 'entry'
 
 class Command
   # オプションLがついているかを確認する
-  # Entryの情報を持ったentriesを作成する。
-  def initialize(files)
+  def initialize(pathname)
+    p pathname
+    files = Dir.glob('*', 0, base: pathname, sort: true)
     @entries = build_entries(files)
   end
 

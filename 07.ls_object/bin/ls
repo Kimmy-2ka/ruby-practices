@@ -1,0 +1,10 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require_relative '../lib/command'
+require 'pathname'
+
+path = ARGV[0] || '.'
+pathname = Pathname(path)
+
+puts Command.new(pathname).output
