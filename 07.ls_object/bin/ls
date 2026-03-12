@@ -9,6 +9,7 @@ opt = OptionParser.new
 params = {}
 
 opt.on('-a') { |v| params[:all] = v }
+opt.on('-r') { |v| params[:reverse] = v }
 
 opt.parse!(ARGV)
 path = ARGV[0] || '.'
