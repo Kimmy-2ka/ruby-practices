@@ -5,8 +5,14 @@ require_relative 'formatter'
 
 class Command
   # オプションLがついているかを確認する
-  def initialize(pathname)
-    files = Dir.glob('*', 0, base: pathname, sort: true)
+  def initialize(params, pathname)
+    files =
+      if params[:all]
+        Dir.entries(pathname)
+      else
+        Dir.glob('*', base: pathname)
+      end.sort
+
     @entries = build_entries(files)
   end
 

@@ -1,10 +1,17 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
-require_relative '../lib/command'
+require 'optparse'
 require 'pathname'
+require_relative '../lib/command'
 
+opt = OptionParser.new
+params = {}
+
+opt.on('-a') { |v| params[:all] = v }
+
+opt.parse!(ARGV)
 path = ARGV[0] || '.'
 pathname = Pathname(path)
 
-puts Command.new(pathname).output
+puts Command.new(params, pathname).output
