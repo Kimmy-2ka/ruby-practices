@@ -65,12 +65,29 @@ class Formatter
 
   def long_format
     total = "合計 #{@entries.sum(&:blocks) / 2}"
+    max_widths = build_max_widths
 
     body =
       @entries.map do |entry|
-        "#{format_mode(entry)} #{entry.nlink} #{entry.user} #{entry.group} #{entry.size.to_s.rjust(4)} #{entry.mtime} #{entry.name}"
-      end
+        [format_mode(entry),
+         entry.nlink.to_s.rjust(max_widths[:nlink]),
+         entry.user.ljust(max_widths[:user]),
+         entry.group.ljust(max_widths[:group]),
+         entry.size.to_s.rjust(max_widths[:size]),
+         entry.mtime,
+         entry.name].join(' ')
+      end.join("\n")
+
     [total, body].join("\n")
+  end
+
+  def build_max_widths
+    {
+      nlink: @entries.map { |entry| entry.nlink.to_s.size }.max,
+      user: @entries.map { |entry| entry.user.to_s.size }.max,
+      group: @entries.map { |entry| entry.group.to_s.size }.max,
+      size: @entries.map { |entry| entry.size.to_s.size }.max
+    }
   end
 
   def format_mode(entry)

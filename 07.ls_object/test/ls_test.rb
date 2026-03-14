@@ -43,7 +43,7 @@ class LsTest < Minitest::Test
     list = Command.new({long: true}, pathname)
     expected = <<~TEXT.chomp
       合計 12
-      -rw-r--r-T 1 kimmy2ka projectA    0  3月 11 21:20 Apple2.txt
+      -rw-r--r-T 1 kimmy2ka users       0  3月 11 21:20 Apple2.txt
       -rwS------ 1 kimmy2ka projectA    0  3月 11 21:21 Egg.txt
       drwxr-xr-t 2 kimmy2ka projectA 4096  3月 11 21:23 Frenchfries
       -rwsr-xr-x 1 kimmy2ka projectA    0  3月 11 19:59 apple.txt
