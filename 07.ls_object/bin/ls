@@ -10,9 +10,9 @@ params = {}
 
 opt.on('-a') { |v| params[:all] = v }
 opt.on('-r') { |v| params[:reverse] = v }
+opt.on('-l') { |v| params[:long] = v }
 
 opt.parse!(ARGV)
 path = ARGV[0] || '.'
 pathname = Pathname(path)
-
-puts Command.new(params, pathname).output
+puts Command.new(params, pathname).output(params)
