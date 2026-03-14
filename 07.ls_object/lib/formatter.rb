@@ -74,7 +74,7 @@ class Formatter
         entry.user.ljust(max_widths[:user]),
         entry.group.ljust(max_widths[:group]),
         entry.size.to_s.rjust(max_widths[:size]),
-        entry.mtime,
+        entry.mtime.strftime('%_m月 %e %H:%M'),
         entry.name
       ].join(' ')
     end.join("\n")
