@@ -4,9 +4,9 @@ require 'pathname'
 require_relative '../lib/command'
 
 class LsTest < Minitest::Test
+  SAMPLE_PATHNAME = Pathname('test/fixtures/sample_entries')
   def test_output_without_option
-    pathname = Pathname('test/fixtures/sample_entries')
-    command = Command.new({}, pathname)
+    command = Command.new({}, SAMPLE_PATHNAME)
     expected = <<~TEXT.chomp
       Apple2.txt   apple.txt  diet_sparkling.txt
       Egg.txt      banana
@@ -16,8 +16,7 @@ class LsTest < Minitest::Test
   end
 
   def test_output_with_all_option
-    pathname = Pathname('test/fixtures/sample_entries')
-    command = Command.new({all: true}, pathname)
+    command = Command.new({all: true}, SAMPLE_PATHNAME)
     expected = <<~TEXT.chomp
       .           Egg.txt      cider
       ..          Frenchfries  diet_sparkling.txt
@@ -28,8 +27,7 @@ class LsTest < Minitest::Test
   end
 
   def test_output_with_reverse_option
-    pathname = Pathname('test/fixtures/sample_entries')
-    command = Command.new({reverse: true}, pathname)
+    command = Command.new({reverse: true}, SAMPLE_PATHNAME)
     expected = <<~TEXT.chomp
       diet_sparkling.txt  apple.txt    Apple2.txt
       cider               Frenchfries
@@ -39,8 +37,7 @@ class LsTest < Minitest::Test
   end
 
   def test_output_with_long_option
-    pathname = Pathname('test/fixtures/sample_entries')
-    command = Command.new({long: true}, pathname)
+    command = Command.new({long: true}, SAMPLE_PATHNAME)
     expected = <<~TEXT.chomp
       合計 12
       -rw-r--r-T 1 kimmy2ka users       0  3月 11 21:20 Apple2.txt
@@ -55,8 +52,7 @@ class LsTest < Minitest::Test
   end
 
   def test_output_with_all_and_long_option
-    pathname = Pathname('test/fixtures/sample_entries')
-    command = Command.new({all: true, long: true}, pathname)
+    command = Command.new({all: true, long: true}, SAMPLE_PATHNAME)
     expected = <<~TEXT.chomp
       合計 20
       drwxr-xr-x 5 kimmy2ka kimmy2ka 4096  3月 12 18:41 .
