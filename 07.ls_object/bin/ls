@@ -15,4 +15,4 @@ opt.on('-l') { |v| params[:long] = v }
 opt.parse!(ARGV)
 path = ARGV[0] || '.'
 pathname = Pathname(path)
-puts Command.new(params, pathname).output(params)
+puts Command.new(params, pathname).output

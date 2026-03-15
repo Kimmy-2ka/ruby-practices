@@ -12,7 +12,7 @@ class LsTest < Minitest::Test
       Egg.txt      banana
       Frenchfries  cider
     TEXT
-    assert_equal expected, command.output({})
+    assert_equal expected, command.output
   end
 
   def test_output_with_all_option
@@ -24,7 +24,7 @@ class LsTest < Minitest::Test
       .melon.txt  apple.txt
       Apple2.txt  banana
     TEXT
-    assert_equal expected, command.output({all: true})
+    assert_equal expected, command.output
   end
 
   def test_output_with_reverse_option
@@ -35,7 +35,7 @@ class LsTest < Minitest::Test
       cider               Frenchfries
       banana              Egg.txt
     TEXT
-    assert_equal expected, command.output({reverse: true})
+    assert_equal expected, command.output
   end
 
   def test_output_with_long_option
@@ -51,7 +51,7 @@ class LsTest < Minitest::Test
       drwx------ 2 kimmy2ka projectA 4096  3月 11 21:17 cider
       -r--r--r-- 1 kimmy2ka projectA    0  3月 11 20:01 diet_sparkling.txt
     TEXT
-    assert_equal expected, command.output({long: true})
+    assert_equal expected, command.output
   end
 
   def test_output_with_all_and_long_option
@@ -70,7 +70,7 @@ class LsTest < Minitest::Test
       drwx------ 2 kimmy2ka projectA 4096  3月 11 21:17 cider
       -r--r--r-- 1 kimmy2ka projectA    0  3月 11 20:01 diet_sparkling.txt
     TEXT
-    assert_equal expected, command.output({all: true, long: true})
+    assert_equal expected, command.output
   end
 
   def test_output_with_different_option_order

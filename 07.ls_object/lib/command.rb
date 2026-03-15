@@ -5,28 +5,30 @@ require_relative 'formatter'
 
 class Command
   def initialize(params, pathname)
-    @entries = build_entries(params, pathname)
+    @params = params
+    @pathname = pathname
+    @entries = build_entries
   end
 
-  def output(params)
+  def output
     formatter = Formatter.new(@entries)
-    params[:long] ? formatter.long_format : formatter.short_format
+    @params[:long] ? formatter.long_format : formatter.short_format
   end
 
   private
 
-  def build_entries(params, pathname)
-    entry_names = prepare_entry_names(params, pathname)
-    entry_names.map do |name|
-      path = pathname.join(name)
+  def build_entries
+    names = prepare_entry_names
+    names.map do |name|
+      path = @pathname.join(name)
       Entry.new(name, path)
     end
   end
 
-  def prepare_entry_names(params, pathname)
-    entry_names =
-      params[:all] ? Dir.entries(pathname).sort : Dir.glob('*', base: pathname, sort: true)
+  def prepare_entry_names
+    names =
+      @params[:all] ? Dir.entries(@pathname).sort : Dir.glob('*', base: @pathname, sort: true)
 
-    params[:reverse] ? entry_names.reverse : entry_names
+    @params[:reverse] ? names.reverse : names
   end
 end
