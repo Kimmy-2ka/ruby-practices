@@ -52,10 +52,10 @@ class Formatter
 
   private
 
-  def pad_columns(raw_columns)
-    column_widths = raw_columns.map { |column| column.map(&:size).max }
-    raw_columns.each_with_index.map do |column, idx|
-      column.map { |entry| entry.ljust(column_widths[idx]) }
+  def pad_columns(columns)
+    columns.map do |column|
+      column_width = column.map(&:size).max
+      column.map { |entry| entry.ljust(column_width) }
     end
   end
 
